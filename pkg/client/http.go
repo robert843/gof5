@@ -241,7 +241,7 @@ func loginSignature(c *http.Client, server string, _, _ *string) error {
 	return nil
 }
 
-func login(c *http.Client, server string, username, password *string) error {
+func login(c *http.Client, server string, username, password *string, forceOTP bool) error {
 	if *username == "" {
 		fmt.Print("Enter VPN username: ")
 		fmt.Scanln(username)
@@ -292,6 +292,31 @@ func login(c *http.Client, server string, username, password *string) error {
 	}
 	resp.Body.Close()
 
+	///otp
+	if forceOTP {
+		var otp string
+		fmt.Print("Enter OTP: ")
+		fmt.Scanln(&otp)
+
+		data = url.Values{}
+		data.Add("otp", otp)
+		data.Add("vhost", "standard")
+		req, err = http.NewRequest("POST", fmt.Sprintf("https://%s/my.policy?outform=xml", server), strings.NewReader(data.Encode()))
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Referer", fmt.Sprintf("https://%s/my.policy", server))
+		req.Header.Set("User-Agent", userAgent)
+		resp, err = c.Do(req)
+		if err != nil {
+			return err
+		}
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		resp.Body.Close()
+	}
 	/*
 		if resp.StatusCode == 302 && resp.Header.Get("Location") == "/my.policy" {
 			return nil

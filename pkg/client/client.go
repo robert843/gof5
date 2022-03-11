@@ -29,6 +29,7 @@ type Options struct {
 	CloseSession bool
 	Debug        bool
 	Sel          bool
+	ForceOTP     bool
 	Version      bool
 	ProfileIndex int
 }
@@ -104,7 +105,7 @@ func Connect(opts *Options) error {
 
 	if len(client.Jar.Cookies(u)) == 0 {
 		// need to login
-		if err := login(client, opts.Server, &opts.Username, &opts.Password); err != nil {
+		if err := login(client, opts.Server, &opts.Username, &opts.Password, opts.ForceOTP); err != nil {
 			return fmt.Errorf("failed to login: %s", err)
 		}
 	} else {
@@ -124,7 +125,7 @@ func Connect(opts *Options) error {
 		}
 		resp.Body.Close()
 
-		if err := login(client, opts.Server, &opts.Username, &opts.Password); err != nil {
+		if err := login(client, opts.Server, &opts.Username, &opts.Password, opts.ForceOTP); err != nil {
 			return fmt.Errorf("failed to login: %s", err)
 		}
 
